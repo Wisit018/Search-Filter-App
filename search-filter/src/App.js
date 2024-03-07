@@ -4,18 +4,51 @@ import { useState, useEffect } from "react";
 function App() {
   const [countries, setCountries] = useState([]);
 
+  const [word, setWord] = useState("");
+  //eslint-disable-next-line
+  const [dataFilter, setDataFilter] = useState(["name", "capital"]);
+
   useEffect(() => {
-    fetch("https://restcountries.com/v2/all ")
+    fetch("https://restcountries.com/v2/all")
       .then((res) => res.json())
       .then((data) => {
         setCountries(data);
       });
   }, []);
 
+  const formatNumber = (num) => {
+    return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+  };
+
+  const searchCountries = (countries) => {
+    return countries.filter((item) => {
+      //eslint-disable-next-line
+      return dataFilter.some((filter) => {
+        if (item[filter]) {
+          return (
+            item[filter].toString().toLowerCase().indexOf(word.toLowerCase()) >
+            -1
+          );
+        }
+      });
+    });
+  };
   return (
     <div className="container">
+      <div className="search-container">
+        <label htmlFor="search-form">
+          <input
+            type="text"
+            className="search-input"
+            placeholder="ค้นหาประเทศหรือเมืองหลวงที่ต้องการ"
+            value={word}
+            onChange={(e) => setWord(e.target.value)}
+          ></input>
+        </label>
+      </div>
+
       <ul className="row">
-        {countries.map((item, index) => {
+        {searchCountries(countries).map((item, index) => {
           return (
             <li key={index}>
               <div className="card">
@@ -26,9 +59,15 @@ function App() {
                   <div className="card-description">
                     <h2>{item.name}</h2>
                     <ol className="card-list">
-                        <li>ประชากร : {item.population}</li>
-                        <li>ภูมิภาค : {item.region}</li>
-                        <li>เมืองหลวง : {item.capital}</li>
+                      <li>
+                        ประชากร : <span>{formatNumber(item.population)}</span> คน
+                      </li>
+                      <li>
+                        ภูมิภาค : <span>{item.region}</span>
+                      </li>
+                      <li>
+                        เมืองหลวง : <span>{item.capital}</span>
+                      </li>
                     </ol>
                   </div>
                 </div>
